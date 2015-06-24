@@ -1,0 +1,3 @@
+useDynLib(CellCountpp)
+exportPattern("^[[:alpha:]]+")
+importFrom(Rcpp, evalCpp)
