@@ -1,4 +1,4 @@
-a<-rep(1,4)
+a<-seq(1,2.5,0.5)
 b<-rep(2,4)
 euclid.dist(Rx = a, Ry = b)
 dist(rbind(a,b))
