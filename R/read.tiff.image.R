@@ -29,6 +29,6 @@ read.tiff.image<-function(image.file,normalize=TRUE){
     }
     im.data<-rescale(im.data, c(0,max(im.data)),c(0,1))
   }
- 
+  
   return(im.data)
 }
