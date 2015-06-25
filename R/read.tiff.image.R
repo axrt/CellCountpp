@@ -13,6 +13,7 @@
 #'
 read.tiff.image<-function(image.file,normalize=TRUE){
   
+  #TODO imput checks
   if(!require("tiff")){
     install.packages("tiff")
   }
