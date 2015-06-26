@@ -5,23 +5,23 @@
 using namespace Rcpp;
 
 inline void setVisited(LogicalMatrix &path, const IntegerMatrix::Row &xys_i){
-  path(xys_i[1],xys_i[2])=true;
+  path(xys_i[0],xys_i[1])=true;
 }
 
 inline void removeVisited(LogicalMatrix &path, const IntegerMatrix::Row &xys_i){
-  path(xys_i[1],xys_i[2])=false;
+  path(xys_i[0],xys_i[1])=false;
 }
 
 inline bool inField(const NumericMatrix &img, const IntegerMatrix::Row &xys_i){
-  return(xys_i[1]>0&&xys_i[1]<=img.ncol()&&xys_i[2]>0&&xys_i[2]<=img.nrow());
+  return(xys_i[0]>=0&&xys_i[0]<img.ncol()&&xys_i[1]>=0&&xys_i[1]<img.nrow());
 }
 
 inline bool hasBeenVisited(LogicalMatrix &path, const IntegerMatrix::Row &xys_i){
-  return path(xys_i[1],xys_i[2]);
+  return path(xys_i[0],xys_i[1]);
 }
 
 inline bool brightEnough(const NumericMatrix &img, const IntegerMatrix::Row &xys_i){
-  return(img(xys_i[1],xys_i[2])>0);
+  return(img(xys_i[0],xys_i[1])>0);
 }
 
 inline bool allChecks(const NumericMatrix &img, LogicalMatrix &path, const IntegerMatrix::Row &xys_i,
@@ -32,7 +32,7 @@ inline bool allChecks(const NumericMatrix &img, LogicalMatrix &path, const Integ
 }
 
 inline bool closeEnough(const IntegerMatrix::Row &xys_i,const IntegerMatrix::Row &start, const double width){
-  const double dist=sqrt(pow(xys_i[1]-start[1],2)+pow(xys_i[2]-start[2],2));
+  const double dist=sqrt(pow(xys_i[0]-start[0],2)+pow(xys_i[1]-start[1],2));
   return(dist<=width);
 }
 
