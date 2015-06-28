@@ -18,5 +18,8 @@ extract.x.y<-function(img.mtx, sort.by.intensity.val=TRUE){
   if(sort.by.intensity.val){
     img.mtx<-img.mtx[order(img.mtx$V,decreasing = TRUE),]
   }
-  return(img.mtx)
+  img.mtx<-img.mtx[,1:2]
+  img.mtx$X<-as.integer(img.mtx[,1])
+  img.mtx$Y<-as.integer(img.mtx[,2])
+  return(as.matrix(img.mtx))
 }
