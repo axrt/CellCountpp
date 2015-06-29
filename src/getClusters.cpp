@@ -17,6 +17,9 @@ inline bool inField(const NumericMatrix &img, const IntegerVector &xys_i){
 }
 
 inline bool hasBeenVisited(LogicalMatrix &path, const IntegerVector &xys_i){
+  if(path(xys_i[0]-1,xys_i[1]-1)!=0&&path(xys_i[0]-1,xys_i[1]-1)!=1){
+    Rcout<<path(xys_i[0]-1,xys_i[1]-1)<<" at (" <<xys_i[0]-1<<","<<xys_i[1]-1<<")"<<" with original "<<"(" <<xys_i[0]<<","<<xys_i[1]<<")"<<std::endl;
+  }
   return path(xys_i[0]-1,xys_i[1]-1);
 }
 
@@ -27,18 +30,21 @@ inline bool brightEnough(const NumericMatrix &img, const IntegerVector &xys_i){
 inline bool closeEnough(const IntegerVector &xys_i,const IntegerVector &start, 
                                  const double width, const double var){
   const double dist=sqrt(pow(xys_i[0]-start[0],2)+pow(xys_i[1]-start[1],2));
-  const double dist_var=dist+var;
-  return(dist<=dist_var);
+  const double dist_var=dist+var/2;
+  const double radius=(width+var)/2;
+  return(dist_var<=radius);
 }
 
 inline bool allChecks(const NumericMatrix &img, LogicalMatrix &path, const IntegerVector &xys_i,
                                const IntegerVector &start, const double width, const double var){
-   const bool in_field=inField(img,xys_i);
-   const bool has_been_visited=hasBeenVisited(path,xys_i);
-   const bool bright_enough=brightEnough(img, xys_i);
-   const bool close_enough=closeEnough(xys_i, start, width, var);
-    
-    return(in_field&&!has_been_visited&&bright_enough&&close_enough);
+   if(inField(img,xys_i)){
+     const bool has_been_visited=hasBeenVisited(path,xys_i);
+     const bool bright_enough=brightEnough(img, xys_i);
+     const bool close_enough=closeEnough(xys_i, start, width, var);
+     return(!has_been_visited&&bright_enough&&close_enough);
+   }else{
+     return false;
+   }
 }
 
 inline const IntegerVector * right(const IntegerVector * xys_i){
@@ -123,15 +129,21 @@ RcppExport SEXP getClusters(SEXP imgMtx, SEXP sortedXY, SEXP pathMtx, SEXP meanW
    const double width=widthV[0];
    const double var=varV[0];
    
-   std::vector<IntegerMatrix*> outClusters;
-   int counter=0; 
+   List outClusterList;
+   const double area=3*pow((width)/2,2);
+   const double lowMargin=3*pow((width-var)/2,2);
+   const double highMargin=3*pow((width+var)/2,2);
    
+   Rcout<<"Area: "<<area<<"+/-"<<3*pow(var/2,2)<<std::endl;
    
    for(int i=0; i<xys.nrow();i++){
      //check if the point has been visited
      if(!hasBeenVisited(path,xys.row(i))){
        //set visited
-       const IntegerVector * currow=new IntegerVector(xys.row(i)[0],xys.row(i)[1]);
+       IntegerVector * currow=new IntegerVector(2);
+       (*currow)[0]=xys.row(i)[0];
+       (*currow)[1]=xys.row(i)[1];
+       
        setVisited(path,xys.row(i));
        std::vector<const IntegerVector*> * outputTemplate =new std::vector<const IntegerVector*>();
        //check if the neigbor can be attached
@@ -139,15 +151,17 @@ RcppExport SEXP getClusters(SEXP imgMtx, SEXP sortedXY, SEXP pathMtx, SEXP meanW
        
        checkNeighborhood(img, path, currow, outputTemplate, xys.row(i), width, var);
        
-      IntegerMatrix * im = new IntegerMatrix(outputTemplate->size(),2);
-  
-      /* for(int j=0;j<outputTemplate->size();j++){
-         for(int k=0;k<2;k++){
-           (*im)(i,k)=(*outputTemplate->at(i))[k];
-         }
+       if(outputTemplate->size()<highMargin&&outputTemplate->size()>lowMargin){
+         IntegerMatrix im(outputTemplate->size(),2);
+         Rcout<<"Cluster saved with: "<<outputTemplate->size()<<" dots.."<<std::endl;
+         //for(int j=0;j<outputTemplate->size();j++){
+          //for(int k=0;k<2;k++){
+           //im(j,k)=(*outputTemplate->at(i))[k];
+          //}
+         //}
+       
+         outClusterList.push_back(im); 
        }
-       */
-       outClusters.push_back(im); 
        
        while(!outputTemplate->empty()) delete outputTemplate->back(), outputTemplate->pop_back();
        delete outputTemplate;
@@ -155,13 +169,7 @@ RcppExport SEXP getClusters(SEXP imgMtx, SEXP sortedXY, SEXP pathMtx, SEXP meanW
    }
    
    Rcout<<"Done parsing clusters.."<<std::endl;
-   
-   List outClusterList;
-   for(int i=0;i<counter;i++){
-     outClusterList[i]=*(outClusters[i]);
-     delete outClusters[i];
-   }
-
    Rcout<<"Done assembling cluster list.."<<std::endl;
+
    return outClusterList;
 }
