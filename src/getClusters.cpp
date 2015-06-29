@@ -17,9 +17,6 @@ inline bool inField(const NumericMatrix &img, const IntegerVector &xys_i){
 }
 
 inline bool hasBeenVisited(LogicalMatrix &path, const IntegerVector &xys_i){
-  if(path(xys_i[0]-1,xys_i[1]-1)!=0&&path(xys_i[0]-1,xys_i[1]-1)!=1){
-    Rcout<<path(xys_i[0]-1,xys_i[1]-1)<<" at (" <<xys_i[0]-1<<","<<xys_i[1]-1<<")"<<" with original "<<"(" <<xys_i[0]<<","<<xys_i[1]<<")"<<std::endl;
-  }
   return path(xys_i[0]-1,xys_i[1]-1);
 }
 
