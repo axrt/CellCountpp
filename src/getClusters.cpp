@@ -154,12 +154,13 @@ RcppExport SEXP getClusters(SEXP imgMtx, SEXP sortedXY, SEXP pathMtx, SEXP meanW
        if(outputTemplate->size()<highMargin&&outputTemplate->size()>lowMargin){
          IntegerMatrix im(outputTemplate->size(),2);
          Rcout<<"Cluster saved with: "<<outputTemplate->size()<<" dots.."<<std::endl;
-         //for(int j=0;j<outputTemplate->size();j++){
-          //for(int k=0;k<2;k++){
-           //im(j,k)=(*outputTemplate->at(i))[k];
-          //}
-         //}
-       
+         
+         for(int j=0;j<outputTemplate->size();j++){
+          for(int k=0;k<2;k++){
+           im(j,k)=(*outputTemplate->at(j))[k];
+          }
+         }
+         
          outClusterList.push_back(im); 
        }
        
