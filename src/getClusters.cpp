@@ -139,13 +139,15 @@ RcppExport SEXP getClusters(SEXP imgMtx, SEXP sortedXY, SEXP pathMtx, SEXP meanW
        
        checkNeighborhood(img, path, currow, outputTemplate, xys.row(i), width, var);
        
-       //IntegerMatrix * im = new IntegerMatrix(outputTemplate->size(),2);
+      IntegerMatrix * im = new IntegerMatrix(outputTemplate->size(),2);
   
-       //for(int i=0;i<im->nrow();i++){
-         //im->row(i)=*outputTemplate->at(i);
-       //}
-       //Rcout<<"Another cluster of size: "<<im->nrow()<<std::endl;
-       //outClusters.push_back(im); 
+      /* for(int j=0;j<outputTemplate->size();j++){
+         for(int k=0;k<2;k++){
+           (*im)(i,k)=(*outputTemplate->at(i))[k];
+         }
+       }
+       */
+       outClusters.push_back(im); 
        
        while(!outputTemplate->empty()) delete outputTemplate->back(), outputTemplate->pop_back();
        delete outputTemplate;
