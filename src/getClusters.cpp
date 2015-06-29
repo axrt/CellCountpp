@@ -17,7 +17,6 @@ inline bool inField(const NumericMatrix &img, const IntegerVector &xys_i){
 }
 
 inline bool hasBeenVisited(LogicalMatrix &path, const IntegerVector &xys_i){
-  Rcout<<"Coordinate: ("<<xys_i[0]-1<<","<<xys_i[1]-1<<") has been visited: "<<path(xys_i[0]-1,xys_i[1]-1)<<std::endl;
   return path(xys_i[0]-1,xys_i[1]-1);
 }
 
@@ -44,61 +43,58 @@ inline bool allChecks(const NumericMatrix &img, LogicalMatrix &path, const Integ
 
 inline const IntegerVector * right(const IntegerVector * xys_i){
   IntegerVector * neigh = new IntegerVector(2);
-  neigh[0]=xys_i[0]+1;
-  neigh[1]=xys_i[1];
-  return(neigh);
+  (*neigh)[0]=(*xys_i)[0]+1;
+  (*neigh)[1]=(*xys_i)[1];
+  return neigh;
 }
 
 inline const IntegerVector * left(const IntegerVector * xys_i){
   IntegerVector * neigh = new IntegerVector(2);
-  neigh[0]=xys_i[0]-1;
-  neigh[1]=xys_i[1];
-  return(neigh);
+  (*neigh)[0]=(*xys_i)[0]-1;
+  (*neigh)[1]=(*xys_i)[1];
+  return neigh;
 }
 
 inline const IntegerVector * up(const IntegerVector * xys_i){
-  IntegerVector * neigh = new IntegerVector(2);
-  neigh[0]=xys_i[0];
-  neigh[1]=xys_i[1]+1;
-  return(neigh);
+ IntegerVector * neigh = new IntegerVector(2);
+  (*neigh)[0]=(*xys_i)[0];
+  (*neigh)[1]=(*xys_i)[1]+1;
+  return neigh;
 }
 
 inline const IntegerVector * down(const IntegerVector * xys_i){
   IntegerVector * neigh = new IntegerVector(2);
-  neigh[0]=xys_i[0];
-  neigh[1]=xys_i[1]-1;
-  return(neigh);
+  (*neigh)[0]=(*xys_i)[0];
+  (*neigh)[1]=(*xys_i)[1]-1;
+  return neigh;
 }
 
 void checkNeighbor(const NumericMatrix &img,LogicalMatrix &path, const IntegerVector * neigh, 
                                      std::vector<const IntegerVector *> * output, const IntegerVector  &startPoint, 
                                      const double width, const double var);
 
-IntegerMatrix * checkNeighborhood(const NumericMatrix &img,LogicalMatrix &path, const IntegerVector * xys_i, 
+void checkNeighborhood(const NumericMatrix &img,LogicalMatrix &path, const IntegerVector * xys_i, 
                                      std::vector<const IntegerVector *> * output, const IntegerVector  &startPoint, 
                                      const double width, const double var){
   //check if an adjasent pixel,is withing the view field, has been visited, is bright enough and is within the possible range
   //right
-  const IntegerVector * neighRight=left(xys_i);
-  checkNeighbor(img,path,neighRight,output,startPoint,width,var);
+  
+  const IntegerVector * neighRight=right(xys_i);
+  delete neighRight;
+  //checkNeighbor(img,path,neighLeft,output,startPoint,width,var);
   
   const IntegerVector * neighUp=up(xys_i);
-  checkNeighbor(img,path,neighUp,output,startPoint,width,var);
+  delete neighUp;
+  //checkNeighbor(img,path,neighUp,output,startPoint,width,var);
   
-  const IntegerVector * neighLeft=right(xys_i);
-  checkNeighbor(img,path,neighLeft,output,startPoint,width,var);
+  const IntegerVector * neighLeft=left(xys_i);
+  delete neighLeft;
+  //checkNeighbor(img,path,neighRight,output,startPoint,width,var);
   
   const IntegerVector * neighDown=down(xys_i);
-  checkNeighbor(img,path,neighDown,output,startPoint,width,var);
+  delete neighDown;
+  //checkNeighbor(img,path,neighDown,output,startPoint,width,var);
   
- 
-  IntegerMatrix * im = new IntegerMatrix(output->size(),2);
-  
-  for(int i=0;i<im->nrow();i++){
-    im->row(i)=*output->at(i);
-  }
-  
-  return im;
 }
 
 void checkNeighbor(const NumericMatrix &img,LogicalMatrix &path, const IntegerVector * neigh, 
@@ -108,8 +104,8 @@ void checkNeighbor(const NumericMatrix &img,LogicalMatrix &path, const IntegerVe
   if(allChecks(img,path,*neigh,startPoint,width,var)){
     setVisited(path,*neigh);
     output->push_back(neigh);
-    std::cout<<img.nrow()<<std::endl;
-    checkNeighborhood(img,path,neigh,output,startPoint,width,var);
+    Rcout<<img.nrow()<<std::endl;
+    //checkNeighborhood(img,path,neigh,output,startPoint,width,var);
   }else{
     delete neigh;
   }
@@ -140,24 +136,35 @@ RcppExport SEXP getClusters(SEXP imgMtx, SEXP sortedXY, SEXP pathMtx, SEXP meanW
      //check if the point has been visited
      if(!hasBeenVisited(path,xys.row(i))){
        //set visited
-       const IntegerVector * currow=new IntegerVector(xys.row(i));
-       //Rcout<<"Current row set to: ("<<(*currow)[0]<<","<<(*currow)[1]<<")"<<std::endl;
+       const IntegerVector * currow=new IntegerVector(xys.row(i)[0],xys.row(i)[1]);
        setVisited(path,xys.row(i));
        std::vector<const IntegerVector*> * outputTemplate =new std::vector<const IntegerVector*>();
        //check if the neigbor can be attached
        outputTemplate->push_back(currow);
        
-       //IntegerMatrix * cluster=checkNeighborhood(img, path, currow, outputTemplate, xys.row(i), width, var);
-       //outClusters.push_back(cluster);
+       checkNeighborhood(img, path, currow, outputTemplate, xys.row(i), width, var);
+       
+       //IntegerMatrix * im = new IntegerMatrix(outputTemplate->size(),2);
+  
+       //for(int i=0;i<im->nrow();i++){
+         //im->row(i)=*outputTemplate->at(i);
+       //}
+       //Rcout<<"Another cluster of size: "<<im->nrow()<<std::endl;
+       //outClusters.push_back(im); 
+       
+       while(!outputTemplate->empty()) delete outputTemplate->back(), outputTemplate->pop_back();
+       delete outputTemplate;
      }
    }
    
    Rcout<<"Done parsing clusters.."<<std::endl;
    
-   List outClusterList(counter);
+   List outClusterList;
    for(int i=0;i<counter;i++){
      outClusterList[i]=*(outClusters[i]);
+     delete outClusters[i];
    }
-   
-   return wrap(outClusterList);
+
+   Rcout<<"Done assembling cluster list.."<<std::endl;
+   return outClusterList;
 }
