@@ -80,20 +80,16 @@ void checkNeighborhood(const NumericMatrix &img,LogicalMatrix &path, const Integ
   //right
   
   const IntegerVector * neighRight=right(xys_i);
-  delete neighRight;
-  //checkNeighbor(img,path,neighLeft,output,startPoint,width,var);
+  checkNeighbor(img,path,neighRight,output,startPoint,width,var);
   
   const IntegerVector * neighUp=up(xys_i);
-  delete neighUp;
-  //checkNeighbor(img,path,neighUp,output,startPoint,width,var);
+  checkNeighbor(img,path,neighUp,output,startPoint,width,var);
   
   const IntegerVector * neighLeft=left(xys_i);
-  delete neighLeft;
-  //checkNeighbor(img,path,neighRight,output,startPoint,width,var);
+  checkNeighbor(img,path,neighLeft,output,startPoint,width,var);
   
   const IntegerVector * neighDown=down(xys_i);
-  delete neighDown;
-  //checkNeighbor(img,path,neighDown,output,startPoint,width,var);
+  checkNeighbor(img,path,neighDown,output,startPoint,width,var);
   
 }
 
@@ -104,8 +100,7 @@ void checkNeighbor(const NumericMatrix &img,LogicalMatrix &path, const IntegerVe
   if(allChecks(img,path,*neigh,startPoint,width,var)){
     setVisited(path,*neigh);
     output->push_back(neigh);
-    Rcout<<img.nrow()<<std::endl;
-    //checkNeighborhood(img,path,neigh,output,startPoint,width,var);
+    checkNeighborhood(img,path,neigh,output,startPoint,width,var);
   }else{
     delete neigh;
   }
