@@ -1,0 +1,14 @@
+get.MLEs<-function(cluster.list){
+  if(!require("gbra")){
+    if(!require("devtools")){
+      installed.packages("devtools")
+      install_github("axrt/gbra")
+    }
+  }
+  mles<-data.frame(t(sapply(cluster.list,function(i){
+    df<-t(i[,1:2])
+    return(getMLE(df)$gprime)
+  })),v=1)
+  colnames(mles)<-c("X","Y","V")
+  return(mles)
+}
