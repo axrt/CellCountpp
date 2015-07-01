@@ -5,7 +5,7 @@ get.MLEs<-function(cluster.list){
       library("devtools")
     }
     install_github("axrt/gbra")
-    library("gbra")
+    library(gbra)
   }
   mles<-data.frame(t(sapply(cluster.list,function(i){
     df<-t(i[,1:2])

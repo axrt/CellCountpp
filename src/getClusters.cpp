@@ -110,7 +110,7 @@ void checkNeighbor(const NumericMatrix &img,LogicalMatrix &path, const IntegerVe
 }
 
 // [[Rcpp::export]]
-RcppExport SEXP getClusters(SEXP imgMtx, SEXP sortedXY, SEXP pathMtx, SEXP meanWidth, SEXP varWidth) {
+RcppExport SEXP getClusters(SEXP imgMtx, SEXP sortedXY, SEXP pathMtx, SEXP meanWidth, SEXP varWidth, SEXP minClusterArea) {
    
    Rcout<<"Started cluster search.."<<std::endl;
    const NumericMatrix img(imgMtx);
@@ -123,13 +123,23 @@ RcppExport SEXP getClusters(SEXP imgMtx, SEXP sortedXY, SEXP pathMtx, SEXP meanW
    Rcout<<"Width read.."<<std::endl;
    const NumericVector varV(varWidth);
    Rcout<<"Variance read.."<<std::endl;
+   const NumericVector mca(minClusterArea);
+   Rcout<<"Minimum cluster area read.."<<std::endl;
+   
    const double width=widthV[0];
    const double var=varV[0];
+   const double minCA=mca[0];
    
    List outClusterList;
    const double area=3*pow((width)/2,2);
    const double lowMargin=3*pow((width-var)/2,2);
    const double highMargin=3*pow((width+var)/2,2);
+   double minCellArea=0;
+   if(lowMargin>minCA){
+     minCellArea=minCA;
+   }else{
+     minCellArea=lowMargin;
+   }
    
    Rcout<<"Area: "<<area<<"+/-"<<3*pow(var/2,2)<<std::endl;
    
@@ -148,7 +158,7 @@ RcppExport SEXP getClusters(SEXP imgMtx, SEXP sortedXY, SEXP pathMtx, SEXP meanW
        
        checkNeighborhood(img, path, currow, outputTemplate, xys.row(i), width, var);
        
-       if(outputTemplate->size()<highMargin&&outputTemplate->size()>lowMargin){
+       if(outputTemplate->size()<=highMargin&&outputTemplate->size()>=minCellArea){
          IntegerMatrix im(outputTemplate->size(),2);
          Rcout<<"Cluster saved with: "<<outputTemplate->size()<<" dots.."<<std::endl;
          
