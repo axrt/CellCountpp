@@ -1,8 +1,10 @@
 get.MLEs<-function(cluster.list){
   if(!require("gbra")){
     if(!require("devtools")){
-      installed.packages("devtools")
+      install.packages("devtools")
+      library("devtools")
       install_github("axrt/gbra")
+      library("gbra")
     }
   }
   mles<-data.frame(t(sapply(cluster.list,function(i){
