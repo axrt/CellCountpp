@@ -3,13 +3,13 @@ get.MLEs<-function(cluster.list){
     if(!require("devtools")){
       install.packages("devtools")
       library("devtools")
-      install_github("axrt/gbra")
-      library("gbra")
     }
+    install_github("axrt/gbra")
+    library("gbra")
   }
   mles<-data.frame(t(sapply(cluster.list,function(i){
     df<-t(i[,1:2])
-    return(getMLE(df)$gprime)
+    return(getMLEpp(df)$gprime)
   })),v=1)
   colnames(mles)<-c("X","Y","V")
   return(mles)
